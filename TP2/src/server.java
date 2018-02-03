@@ -15,8 +15,8 @@ public class server {
 	    
 		InetAddress serverAddress;
 		String serverAddressString;
-		String login;
-		String password;
+		String login = null;
+		String password = null;
 		int port;
         Scanner keyboard = new Scanner (System.in);
         
@@ -30,12 +30,12 @@ public class server {
 			     break;
 			}
 			catch(UnknownHostException ex){
-			       System.out.println("IP non valide, réessayez");
+			       System.out.println("IP non valide, rï¿½essayez");
 			}
 		}
         
         while (true){
-        	System.out.println("Veuillez entrer le port d'écoute");
+        	System.out.println("Veuillez entrer le port d'ï¿½coute");
    
         	try{
 	        	port = keyboard.nextInt();
@@ -44,11 +44,11 @@ public class server {
 	        		System.out.println("port valide");
 	        		break;
 	        	}
-	        	else System.out.println("port hors de l'intervalle 5000-5050, réessayez");
+	        	else System.out.println("port hors de l'intervalle 5000-5050, rï¿½essayez");
 	        }
         	catch (InputMismatchException e)
         	{
-        		System.out.println("format du port incorrect, réessayez");
+        		System.out.println("format du port incorrect, rï¿½essayez");
         		keyboard.next();
         	}
         		
@@ -58,15 +58,13 @@ public class server {
         listener.setReuseAddress(true);
 		listener.bind(new InetSocketAddress(serverAddress, port));
 		System.out.format("Le serveur de conversion Sobel tourne sur: %s:%d%n", serverAddressString, port);
-		
-		/*
+        
 		try {
             while (true) {
-                new SobelConverter(listener.accept(), login, password).start();
+                new SobelConverter(listener.accept(), "valentin", "bouis").start();
             }
         } finally {
             listener.close();
         }
-        */
 	 }
 }
