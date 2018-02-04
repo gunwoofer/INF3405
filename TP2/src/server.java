@@ -56,11 +56,11 @@ public class server {
         
         ServerSocket listener = new ServerSocket();
         listener.setReuseAddress(true);
-		listener.bind(new InetSocketAddress(serverAddress, port));
-		System.out.format("Le serveur de conversion Sobel tourne sur: %s:%d%n", serverAddressString, port);
+	listener.bind(new InetSocketAddress(serverAddress, port));
+	System.out.format("Le serveur de conversion Sobel tourne sur: %s:%d%n", serverAddressString, port);
         
-		try {
-            while (true) {
+	try {
+        	while (true) {
                 new SobelConverter(listener.accept(), "valentin", "bouis").start();
             }
         } finally {
