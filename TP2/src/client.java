@@ -5,6 +5,12 @@ import java.net.UnknownHostException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
 public class client {
 
@@ -50,11 +56,30 @@ public class client {
         	}
         		
         }
+        
+        keyboard.nextLine();
+        System.out.println("Veuillez entrer votre nom d utilisateur :");
+        login = keyboard.nextLine();
+        //keyboard.nextLine();
+        System.out.println("Veuillez entrer votre mot de passe :");
+        password = keyboard.nextLine();
 		
 		
 		try {
 		
 		     socket = new Socket(serverAddress, port);	
+		     
+		     
+		     //TODO enoyer pseudo / mdp au serveur
+		     
+		     OutputStream os = socket.getOutputStream();
+             OutputStreamWriter osw = new OutputStreamWriter(os);
+             BufferedWriter bw = new BufferedWriter(osw);
+ 
+             String pseudomdp = login + ":" + password;
+             bw.write(pseudomdp);
+             bw.flush();
+		     
 	         socket.close();
 
 		}catch (UnknownHostException e) {

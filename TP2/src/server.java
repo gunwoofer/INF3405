@@ -8,6 +8,12 @@ import java.util.Scanner;
 import java.io.FileReader;
 import java.util.Iterator;
 import org.json.simple.JSONArray;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
 public class server {
 
@@ -61,6 +67,15 @@ public class server {
         
 		try {
             while (true) {
+            	Socket socket = listener.accept();
+            	InputStream is = socket.getInputStream();
+                InputStreamReader isr = new InputStreamReader(is);
+                BufferedReader br = new BufferedReader(isr);
+                String number = br.readLine();
+                System.out.println("Message received from client is "+number);
+            	
+            	
+            	
                 new SobelConverter(listener.accept(), "valentin", "bouis").start();
             }
         } finally {
