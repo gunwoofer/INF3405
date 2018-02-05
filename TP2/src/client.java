@@ -69,17 +69,19 @@ public class client {
 		
 		     socket = new Socket(serverAddress, port);	
 		     
-		     
-		     //TODO enoyer pseudo / mdp au serveur
-		     
 		     OutputStream os = socket.getOutputStream();
              OutputStreamWriter osw = new OutputStreamWriter(os);
              BufferedWriter bw = new BufferedWriter(osw);
  
-             String pseudomdp = login + ":" + password;
+             String pseudomdp = "CREDENTIALS_" + login + ":" + password;
              bw.write(pseudomdp);
              bw.flush();
 		     
+             String autorisationServeur = null;
+             
+             
+             
+             
 	         socket.close();
 
 		}catch (UnknownHostException e) {

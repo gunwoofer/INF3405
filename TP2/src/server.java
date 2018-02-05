@@ -73,24 +73,36 @@ public class server {
 		System.out.format("Le serveur de conversion Sobel tourne sur: %s:%d%n", serverAddressString, port);
         
 		try {
-            while (true) {
-            	Socket socket = listener.accept();
+			Socket socket = listener.accept();
+            while (!socket.isClosed()) {
             	
             	InputStream is = socket.getInputStream();
                 InputStreamReader isr = new InputStreamReader(is);
                 BufferedReader br = new BufferedReader(isr);
-                String pseudomdp = br.readLine();
+                String messageRecu = br.readLine();
                 
                 //pseudomdp de la forme pseudo:mdp
-                String pseudo = pseudomdp.split(":")[0];
-                String mdp = pseudomdp.split(":")[1];
-                System.out.println("Pseudo : " + pseudo);
-                System.out.println("Mot de passe : " + mdp);
+                if(messageRecu != null) {
+                	String code = messageRecu.split("_")[0];
+                	switch(code) {
+                	case "CREDENTIALS" :
+                		String pseudo = messageRecu.split("_")[1].split(":")[0];
+                        String mdp = messageRecu.split("_")[1].split(":")[1];
+                        System.out.println("Pseudo : " + pseudo);
+                        System.out.println("Mot de passe : " + mdp);
+                        if(verifierCredentials(pseudo, mdp)) {
+                        	//... credentials valides
+                        	
+                       }else {
+                        	// Mauvais credentiels
+                        	
+                       }
+                	}
+                }
+                
             	
-                Boolean co = verifierCredentials(pseudo, mdp);
-                System.out.println(co);
+
             
-                //new SobelConverter(listener.accept(), "valentin", "bouis").start();
             }
         } finally {
             listener.close();
