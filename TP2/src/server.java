@@ -62,8 +62,8 @@ public class server {
         
         ServerSocket listener = new ServerSocket();
         listener.setReuseAddress(true);
-		listener.bind(new InetSocketAddress(serverAddress, port));
-		System.out.format("Le serveur de conversion Sobel tourne sur: %s:%d%n", serverAddressString, port);
+	listener.bind(new InetSocketAddress(serverAddress, port));
+	System.out.format("Le serveur de conversion Sobel tourne sur: %s:%d%n", serverAddressString, port);
         
 		try {
             while (true) {
@@ -71,12 +71,12 @@ public class server {
             	InputStream is = socket.getInputStream();
                 InputStreamReader isr = new InputStreamReader(is);
                 BufferedReader br = new BufferedReader(isr);
-                String number = br.readLine();
-                System.out.println("Message received from client is "+number);
+                String pseudomdp = br.readLine();
+                System.out.println("Pseudo et mot de passe du client :  " + pseudomdp);
             	
             	
-            	
-                new SobelConverter(listener.accept(), "valentin", "bouis").start();
+            
+                //new SobelConverter(listener.accept(), "valentin", "bouis").start();
             }
         } finally {
             listener.close();
