@@ -39,14 +39,24 @@ public class SobelConverter extends Thread {
                 if(SobelConverter.verifierCredentials(pseudo, mdp)) {
                 	System.out.println("Connexion acceptee");
                 	out.println("true");
+                	break;
                 }
                 else {
                 	System.out.println("Connexion refusee");
                 	out.println("false");
+                	break;
                 }
                 
 			}
 			
+			while (true) {
+				String taille = in.readLine();
+				if (taille == null || taille.equals(".")) {
+                    break;
+                }
+				System.out.println(taille);
+			}
+				
 			
 		} catch (IOException e) {
             System.out.println("Error handling client# " + e);
@@ -61,31 +71,7 @@ public class SobelConverter extends Thread {
             System.out.println("Connection with client closed");
         }
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	public static boolean verifierCredentials(String login, String mdp) throws FileNotFoundException, IOException, ParseException 
 	 {
 		
@@ -115,12 +101,6 @@ public class SobelConverter extends Thread {
        file.flush();
 	    return true;
 	 }
-	
-	
-	
-	
-	
-	
 	
 	public static BufferedImage process(BufferedImage image) throws IOException 
 	{
@@ -213,6 +193,4 @@ public class SobelConverter extends Thread {
 
       return gray;
   }
-	
-	
 }
