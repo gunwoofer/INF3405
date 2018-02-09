@@ -2,11 +2,19 @@ import java.net.Socket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+
+import javax.imageio.ImageIO;
+
+
 import java.io.IOException;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -84,19 +92,19 @@ public class client {
              if (messageRecu.equals("true")) {
             	 System.out.println("Vous etes connecte au service de traitement d image !");
             	 //...
+            	 String nomFichier = "lassonde.jpg";
+            	 BufferedImage image = ImageIO.read(new File("./src/" + nomFichier));
+            	 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            	 ImageIO.write(image, "jpg", byteArrayOutputStream);
+            	 
+            	 byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
+                 out.println(size);
+                 out.println(byteArrayOutputStream.toByteArray());
+            	 
              } else {
             	 System.out.println("Mauvaise combinaison de login/password, veuillez re essayer");
              }
             
-             
-             
-             
-           
-             
-       
-             
-            
-             
 	         socket.close();
 
 		}catch (UnknownHostException e) {
