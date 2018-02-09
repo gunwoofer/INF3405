@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 
 public class server {
 
@@ -30,6 +31,8 @@ public class server {
 		String serverAddressString;
 		String login = null;
 		String password = null;
+		PrintWriter out = null;
+		BufferedReader in = null;
 		int port;
         Scanner keyboard = new Scanner (System.in);
         
@@ -73,69 +76,13 @@ public class server {
 		System.out.format("Le serveur de conversion Sobel tourne sur: %s:%d%n", serverAddressString, port);
         
 		try {
-			Socket socket = listener.accept();
-            while (!socket.isClosed()) {
-            	
-            	InputStream is = socket.getInputStream();
-                InputStreamReader isr = new InputStreamReader(is);
-                BufferedReader br = new BufferedReader(isr);
-                String messageRecu = br.readLine();
+			 while (true) {
+	                new SobelConverter(listener.accept()).start();
+	            }
                 
-                //pseudomdp de la forme pseudo:mdp
-                if(messageRecu != null) {
-                	String code = messageRecu.split("_")[0];
-                	switch(code) {
-                	case "CREDENTIALS" :
-                		String pseudo = messageRecu.split("_")[1].split(":")[0];
-                        String mdp = messageRecu.split("_")[1].split(":")[1];
-                        System.out.println("Pseudo : " + pseudo);
-                        System.out.println("Mot de passe : " + mdp);
-                        if(verifierCredentials(pseudo, mdp)) {
-                        	//... credentials valides
-                        	
-                       }else {
-                        	// Mauvais credentiels
-                        	
-                       }
-                	}
-                }
-                
-            	
-
-            
-            }
+           
         } finally {
             listener.close();
         }
-	 }
-	 
-	 public static boolean verifierCredentials(String login, String mdp) throws FileNotFoundException, IOException, ParseException {
-		
-		 JSONParser parser = new JSONParser();
-	        
-    	Object obj = parser.parse(new FileReader("login.json"));
-        JSONArray jsonArray = (JSONArray)obj;
-        
-        for (Object o : jsonArray)
-        {
-        	JSONObject utilisateur = (JSONObject) o;
-        	if (login == utilisateur.get("login"))
-        	{
-        		if (mdp == utilisateur.get("password")) { return true; }
-        		else {
-        			return false;
-        		}
-        	}
-        }
-        
-        	FileWriter file = new FileWriter("login.json");
-        	JSONObject newJSON = new JSONObject();
-    	    newJSON.put("password", mdp);
-    	    newJSON.put("login", login);
-    	    jsonArray.add(newJSON);
-    	    file.write(jsonArray.toJSONString());
-            file.flush();
-    	    return true;
-
 	 }
 }

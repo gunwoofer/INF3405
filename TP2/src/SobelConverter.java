@@ -1,11 +1,128 @@
 import java.net.Socket;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 
 public class SobelConverter extends Thread {
 
 	private Socket socket;
+	
+	public SobelConverter(Socket socket) {
+		this.socket = socket;
+	}
+	
+	public void run() {
+		try {
+			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			PrintWriter out = new PrintWriter(socket.getOutputStream());
+			
+			// Credentials
+			while (true) {
+				String messageRecu = in.readLine();
+				if (messageRecu == null || messageRecu.equals(".")) {
+                    break;
+                }
+				String pseudo = messageRecu.split(":")[0];
+                String mdp = messageRecu.split(":")[1];
+                System.out.println("Pseudo : " + pseudo);
+                System.out.println("Mot de passe : " + mdp);
+                if(SobelConverter.verifierCredentials(pseudo, mdp)) {
+                	System.out.println("Connexion acceptee");
+                	out.write("true");
+                    out.flush();
+                }
+                else {
+                	System.out.println("Connexion refusee");
+                	out.write("false");
+                    out.flush();
+                }
+                
+			}
+			
+			
+		} catch (IOException e) {
+            System.out.println("Error handling client# " + e);
+        } catch (ParseException e) {
+			e.printStackTrace();
+		} finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                System.out.println("Couldn't close a socket, what's going on?");
+            }
+            System.out.println("Connection with client closed");
+        }
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public static boolean verifierCredentials(String login, String mdp) throws FileNotFoundException, IOException, ParseException 
+	 {
+		
+		JSONParser parser = new JSONParser();
+	        
+   	Object obj = parser.parse(new FileReader("./src/login.json"));
+       JSONArray userList = (JSONArray)obj;
+       
+       for (Object o : userList)
+       {
+       	JSONObject utilisateur = (JSONObject) o;
+       	if (login.equals (utilisateur.get("login")))
+       	{
+       		if (mdp.equals(utilisateur.get("password"))) { return true; }
+       		else {
+       			return false;
+       		}
+       	}
+       }
+       
+   	FileWriter file = new FileWriter("./src/login.json");
+   	JSONObject newJSON = new JSONObject();
+   	newJSON.put("login", login);
+	    newJSON.put("password", mdp);
+	    userList.add(newJSON);
+	    file.write(userList.toJSONString());
+       file.flush();
+	    return true;
+	 }
+	
+	
+	
+	
+	
+	
 	
 	public static BufferedImage process(BufferedImage image) throws IOException 
 	{
