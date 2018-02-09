@@ -24,7 +24,7 @@ public class SobelConverter extends Thread {
 	public void run() {
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			PrintWriter out = new PrintWriter(socket.getOutputStream());
+			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 			
 			// Credentials
 			while (true) {
@@ -38,13 +38,11 @@ public class SobelConverter extends Thread {
                 System.out.println("Mot de passe : " + mdp);
                 if(SobelConverter.verifierCredentials(pseudo, mdp)) {
                 	System.out.println("Connexion acceptee");
-                	out.write("true");
-                    out.flush();
+                	out.println("true");
                 }
                 else {
                 	System.out.println("Connexion refusee");
-                	out.write("false");
-                    out.flush();
+                	out.println("false");
                 }
                 
 			}

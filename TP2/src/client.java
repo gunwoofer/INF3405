@@ -73,12 +73,23 @@ public class client {
 		     socket = new Socket(serverAddress, port);	
 		     
 		     in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
- 			 out = new PrintWriter(socket.getOutputStream());
+ 			 out = new PrintWriter(socket.getOutputStream(), true);
  			 
  			 String pseudomdp = login + ":" + password;
-             out.write(pseudomdp);
+             out.println(pseudomdp);
              out.flush();
-      
+             
+             
+             String messageRecu = in.readLine();
+             if (messageRecu.equals("true")) {
+            	 System.out.println("Vous etes connecte au service de traitement d image !");
+            	 //...
+             } else {
+            	 System.out.println("Mauvaise combinaison de login/password, veuillez re essayer");
+             }
+            
+             
+             
              
            
              
