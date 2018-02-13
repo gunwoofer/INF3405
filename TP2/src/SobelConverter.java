@@ -63,29 +63,22 @@ public class SobelConverter extends Thread {
 				if (taille == null || taille.equals(".")) {
                     break;
                 }
-				size = in.read();
+				size = Integer.parseInt(taille);
 				System.out.println("nombre de bits du fichier " + size);
 				break;
 			}
 			
 			//Reception de l image
 			while (true) { 
-				String taille = in.readLine(); //Surement de la DEMER
-				if (taille == null || taille.equals(".")) {
-                    break;
-                }
 				byte[] tabImage = readExactly(socket.getInputStream(), size);
-				ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(tabImage);
+				InputStream byteArrayInputStream = new ByteArrayInputStream(tabImage);
 				image = ImageIO.read(byteArrayInputStream);
 				System.out.println("Image bien reçue");
+				break;
 			}
 			
 			//Traitement de l image
 			while (true) { 
-				String taille = in.readLine(); //Surement de la DEMER
-				if (taille == null || taille.equals(".")) {
-                    break;
-                }
 				BufferedImage imageSobel = process(image);
 				System.out.println("Image traitee");
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -94,18 +87,18 @@ public class SobelConverter extends Thread {
 	        	out.println(sobelSize);
 	        	byte tabSobel[] = byteArrayOutputStream.toByteArray();
 	        	out.println(tabSobel);
-				
+	        	break;
 			}
-			
-
-			
-				
 			
 		} catch (IOException e) {
             System.out.println("Error handling client# " + e);
         } catch (ParseException e) {
 			e.printStackTrace();
-		} finally {
+		} 
+		  catch (NumberFormatException e) {
+			e.printStackTrace();
+		}
+		finally {
             try {
                 socket.close();
             } catch (IOException e) {
@@ -141,7 +134,7 @@ public class SobelConverter extends Thread {
 	    newJSON.put("password", mdp);
 	    userList.add(newJSON);
 	    file.write(userList.toJSONString());
-       file.flush();
+        file.flush();
 	    return true;
 	 }
 	

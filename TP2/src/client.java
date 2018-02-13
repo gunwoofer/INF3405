@@ -86,7 +86,6 @@ public class client {
  			 
  			 String pseudomdp = login + ":" + password;
              out.println(pseudomdp);
-             out.flush();
              
              
              String messageRecu = in.readLine();
@@ -99,6 +98,7 @@ public class client {
             	 BufferedImage image = ImageIO.read(new File("./src/" + nomFichier));
             	 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             	 ImageIO.write(image, "jpg", byteArrayOutputStream);
+            	 byteArrayOutputStream.flush();
             	 int size = byteArrayOutputStream.size();
             	 out.println(size);
             	 byte tabImage[] = byteArrayOutputStream.toByteArray();
@@ -106,7 +106,7 @@ public class client {
             	 System.out.println("Image envoyee");
             	 
             	 //Reception de l image
-            	 int sobelSize = in.read();
+            	 int sobelSize = Integer.parseInt(in.readLine());
  				 System.out.println("nombre de bits du fichier " + sobelSize);
             	 byte[] tabSobel = readExactly(socket.getInputStream(), sobelSize);
  				 ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(tabSobel);
