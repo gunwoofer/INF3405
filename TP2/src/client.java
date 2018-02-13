@@ -45,12 +45,12 @@ public class client {
 			     break;
 			}
 			catch(UnknownHostException ex){
-			       System.out.println("IP non valide, rï¿½essayez");
+			       System.out.println("IP non valide, reessayez");
 			}
 		}
         
         while (true){
-        	System.out.println("Veuillez entrer le port d'ï¿½coute");
+        	System.out.println("Veuillez entrer le port d'ecoute");
    
         	try{
 	        	port = keyboard.nextInt();
@@ -114,8 +114,8 @@ public class client {
  				 System.out.println("Image bien reçue");
  				 System.out.println("Entrez le nom sous lequel enregistrer l image Sobel");
  				 String nomSobel = keyboard.nextLine();
- 				 ImageIO.write(imageSobel, "jpg", new File("./src/" + nomSobel));
- 				 System.out.println("Votre imqge convertie se trouve dans ./src/" + nomSobel);
+ 				 ImageIO.write(imageSobel, "jpg", new File("./src/" + nomSobel + ".jpg"));
+ 				 System.out.println("Votre image convertie se trouve dans ./src/" + nomSobel + ".jpg");
            
             	 
              } else {

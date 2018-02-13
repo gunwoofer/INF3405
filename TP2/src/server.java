@@ -46,12 +46,12 @@ public class server {
 			     break;
 			}
 			catch(UnknownHostException ex){
-			       System.out.println("IP non valide, r�essayez");
+			       System.out.println("IP non valide, reessayez");
 			}
 		}
         
         while (true){
-        	System.out.println("Veuillez entrer le port d'�coute");
+        	System.out.println("Veuillez entrer le port d'ecoute");
    
         	try{
 	        	port = keyboard.nextInt();
@@ -60,11 +60,11 @@ public class server {
 	        		System.out.println("port valide");
 	        		break;
 	        	}
-	        	else System.out.println("port hors de l'intervalle 5000-5050, r�essayez");
+	        	else System.out.println("port hors de l'intervalle 5000-5050, reessayez");
 	        }
         	catch (InputMismatchException e)
         	{
-        		System.out.println("format du port incorrect, r�essayez");
+        		System.out.println("format du port incorrect, reessayez");
         		keyboard.next();
         	}
         		
