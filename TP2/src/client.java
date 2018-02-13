@@ -102,7 +102,7 @@ public class client {
             	 int size = byteArrayOutputStream.size();
             	 out.println(size);
             	 byte tabImage[] = byteArrayOutputStream.toByteArray();
-            	 out.println(tabImage);
+            	 socket.getOutputStream().write(tabImage);
             	 System.out.println("Image envoyee");
             	 
             	 //Reception de l image

@@ -86,7 +86,7 @@ public class SobelConverter extends Thread {
 	           	int sobelSize = byteArrayOutputStream.size();
 	        	out.println(sobelSize);
 	        	byte tabSobel[] = byteArrayOutputStream.toByteArray();
-	        	out.println(tabSobel);
+	        	socket.getOutputStream().write(tabSobel);
 	        	break;
 			}
 			
