@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -85,24 +86,40 @@ public class client {
  			 
  			 String pseudomdp = login + ":" + password;
              out.println(pseudomdp);
-             out.flush();
              
              
              String messageRecu = in.readLine();
              if (messageRecu.equals("true")) {
             	 System.out.println("Vous etes connecte au service de traitement d image !");
-            	 //...
+            	 
+            	 
+            	 //Envoi de l image
             	 String nomFichier = "lassonde.jpg";
             	 BufferedImage image = ImageIO.read(new File("./src/" + nomFichier));
             	 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             	 ImageIO.write(image, "jpg", byteArrayOutputStream);
+            	 byteArrayOutputStream.flush();
+            	 int size = byteArrayOutputStream.size();
+            	 out.println(size);
+            	 byte tabImage[] = byteArrayOutputStream.toByteArray();
+            	 socket.getOutputStream().write(tabImage);
+            	 System.out.println("Image envoyee");
             	 
-            	 byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
-                 out.println(size);
-                 out.println(byteArrayOutputStream.toByteArray());
+            	 //Reception de l image
+            	 int sobelSize = Integer.parseInt(in.readLine());
+ 				 System.out.println("nombre de bits du fichier " + sobelSize);
+            	 byte[] tabSobel = readExactly(socket.getInputStream(), sobelSize);
+ 				 ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(tabSobel);
+ 				 BufferedImage imageSobel = ImageIO.read(byteArrayInputStream);
+ 				 System.out.println("Image bien reçue");
+ 				 System.out.println("Entrez le nom sous lequel enregistrer l image Sobel");
+ 				 String nomSobel = keyboard.nextLine();
+ 				 ImageIO.write(imageSobel, "jpg", new File("./src/" + nomSobel));
+ 				 System.out.println("Votre imqge convertie se trouve dans ./src/" + nomSobel);
+           
             	 
              } else {
-            	 System.out.println("Mauvaise combinaison de login/password, veuillez re essayer");
+            	 System.out.println("Mauvaise combinaison de login/password, veuillez reessayer");
              }
             
 	         socket.close();
@@ -112,6 +129,22 @@ public class client {
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static byte[] readExactly(InputStream input, int size) throws IOException
+	{
+	    byte[] data = new byte[size];
+	    int index = 0;
+	    while (index < size)
+	    {
+	        int bytesRead = input.read(data, index, size - index);
+	        if (bytesRead < 0)
+	        {
+	            throw new IOException("Insufficient data in stream");
+	        }
+	        index += size;
+	    }
+	    return data;
 	}
 
 }

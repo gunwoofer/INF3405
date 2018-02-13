@@ -1,10 +1,17 @@
 import java.net.Socket;
+
+import javax.imageio.ImageIO;
+
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import org.json.simple.JSONArray;
@@ -25,6 +32,8 @@ public class SobelConverter extends Thread {
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+			int size = 0;
+			BufferedImage image = null;
 			
 			// Credentials
 			while (true) {
@@ -48,21 +57,48 @@ public class SobelConverter extends Thread {
                 }
                 
 			}
-			
-			while (true) {
-				String taille = in.readLine();
+			//Reception taille de l image en tableau
+			while (true) { 
+				String taille = in.readLine(); //Surement de la DEMER
 				if (taille == null || taille.equals(".")) {
                     break;
                 }
-				System.out.println(taille);
+				size = Integer.parseInt(taille);
+				System.out.println("nombre de bits du fichier " + size);
+				break;
 			}
-				
+			
+			//Reception de l image
+			while (true) { 
+				byte[] tabImage = readExactly(socket.getInputStream(), size);
+				InputStream byteArrayInputStream = new ByteArrayInputStream(tabImage);
+				image = ImageIO.read(byteArrayInputStream);
+				System.out.println("Image bien reçue");
+				break;
+			}
+			
+			//Traitement de l image
+			while (true) { 
+				BufferedImage imageSobel = process(image);
+				System.out.println("Image traitee");
+				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+           	 	ImageIO.write(imageSobel, "jpg", byteArrayOutputStream);
+	           	int sobelSize = byteArrayOutputStream.size();
+	        	out.println(sobelSize);
+	        	byte tabSobel[] = byteArrayOutputStream.toByteArray();
+	        	socket.getOutputStream().write(tabSobel);
+	        	break;
+			}
 			
 		} catch (IOException e) {
             System.out.println("Error handling client# " + e);
         } catch (ParseException e) {
 			e.printStackTrace();
-		} finally {
+		} 
+		  catch (NumberFormatException e) {
+			e.printStackTrace();
+		}
+		finally {
             try {
                 socket.close();
             } catch (IOException e) {
@@ -98,9 +134,25 @@ public class SobelConverter extends Thread {
 	    newJSON.put("password", mdp);
 	    userList.add(newJSON);
 	    file.write(userList.toJSONString());
-       file.flush();
+        file.flush();
 	    return true;
 	 }
+	
+	public static byte[] readExactly(InputStream input, int size) throws IOException //Fonction Buggee
+	{
+	    byte[] data = new byte[size];
+	    int index = 0;
+	    while (index < size)
+	    {
+	        int bytesRead = input.read(data, index, size - index);
+	        if (bytesRead < 0)
+	        {
+	            throw new IOException("Insufficient data in stream");
+	        }
+	        index += size;
+	    }
+	    return data;
+	}
 	
 	public static BufferedImage process(BufferedImage image) throws IOException 
 	{
