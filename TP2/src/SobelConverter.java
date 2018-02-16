@@ -73,7 +73,7 @@ public class SobelConverter extends Thread {
 				byte[] tabImage = readExactly(socket.getInputStream(), size);
 				InputStream byteArrayInputStream = new ByteArrayInputStream(tabImage);
 				image = ImageIO.read(byteArrayInputStream);
-				System.out.println("Image bien reçue");
+				System.out.println("Image bien reÃ§ue");
 				break;
 			}
 			
@@ -87,6 +87,10 @@ public class SobelConverter extends Thread {
 	        	out.println(sobelSize);
 	        	byte tabSobel[] = byteArrayOutputStream.toByteArray();
 	        	socket.getOutputStream().write(tabSobel);
+	        	
+	        	String bienRecu = in.readLine();
+	        	System.out.println(bienRecu);
+	        	
 	        	break;
 			}
 			
