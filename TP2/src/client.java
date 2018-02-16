@@ -34,7 +34,7 @@ public class client {
 		BufferedReader in = null;
 		int port;
         Scanner keyboard = new Scanner (System.in);
-        Scanner keyboard2 = new Scanner (System.in);
+        //Scanner keyboard2 = new Scanner (System.in);
         
         while(true){
 	        System.out.println("Veuillez entrer l'adresse du serveur");
@@ -60,11 +60,11 @@ public class client {
 	        		System.out.println("port valide");
 	        		break;
 	        	}
-	        	else System.out.println("port hors de l'intervalle 5000-5050, r�essayez");
+	        	else System.out.println("port hors de l'intervalle 5000-5050, rï¿½essayez");
 	        }
         	catch (InputMismatchException e)
         	{
-        		System.out.println("format du port incorrect, r�essayez");
+        		System.out.println("format du port incorrect, rï¿½essayez");
         		keyboard.next();
         	}
         		
@@ -103,20 +103,33 @@ public class client {
             	 byteArrayOutputStream.flush();
             	 int size = byteArrayOutputStream.size();
             	 out.println(size);
+            	 
+            	 String recutaille = in.readLine();
+            	 
             	 byte tabImage[] = byteArrayOutputStream.toByteArray();
             	 socket.getOutputStream().write(tabImage);
             	 System.out.println("Image envoyee");
             	 
+            	 String recuimage = in.readLine();
+            	 
             	 //Reception de l image
-            	 int sobelSize = Integer.parseInt(in.readLine());
+            	 String tailleImage = in.readLine();
+            	 
+            	 out.println("taille bien recue");
+            	 
+            	 int sobelSize = Integer.parseInt(tailleImage);
+            	 //int sobelSize = Integer.parseInt(in.readLine());
  				 System.out.println("nombre de bits du fichier " + sobelSize);
             	 byte[] tabSobel = readExactly(socket.getInputStream(), sobelSize);
+            	 
+            	 out.println("IMAGEEEEEE BIEN RECUE");
+            	 
  				 ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(tabSobel);
  				 BufferedImage imageSobel = ImageIO.read(byteArrayInputStream);
- 				 System.out.println("Image bien re�ue");
+ 				 System.out.println("Image bien reï¿½ue");
  				 System.out.println("Entrez le nom sous lequel enregistrer l image Sobel");
  				 
- 				 String nomSobel = keyboard2.nextLine();
+ 				 String nomSobel = keyboard.nextLine();
  				 System.out.println(nomSobel);
  				 ImageIO.write(imageSobel, "jpg", new File("./src/" + nomSobel + ".jpg"));
  				 System.out.println("Votre image convertie se trouve dans ./src/" + nomSobel + ".jpg");
