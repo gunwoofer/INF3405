@@ -34,6 +34,7 @@ public class client {
 		BufferedReader in = null;
 		int port;
         Scanner keyboard = new Scanner (System.in);
+        Scanner keyboard2 = new Scanner (System.in);
         
         while(true){
 	        System.out.println("Veuillez entrer l'adresse du serveur");
@@ -94,7 +95,8 @@ public class client {
             	 
             	 
             	 //Envoi de l image
-            	 String nomFichier = "lassonde.jpg";
+            	 System.out.println("veuillez entrer le nom de l image a traiter (exemple : lassonde.jpg) : ");
+            	 String nomFichier = keyboard.nextLine();
             	 BufferedImage image = ImageIO.read(new File("./src/" + nomFichier));
             	 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             	 ImageIO.write(image, "jpg", byteArrayOutputStream);
@@ -111,9 +113,11 @@ public class client {
             	 byte[] tabSobel = readExactly(socket.getInputStream(), sobelSize);
  				 ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(tabSobel);
  				 BufferedImage imageSobel = ImageIO.read(byteArrayInputStream);
- 				 System.out.println("Image bien reçue");
+ 				 System.out.println("Image bien reï¿½ue");
  				 System.out.println("Entrez le nom sous lequel enregistrer l image Sobel");
- 				 String nomSobel = keyboard.nextLine();
+ 				 
+ 				 String nomSobel = keyboard2.nextLine();
+ 				 System.out.println(nomSobel);
  				 ImageIO.write(imageSobel, "jpg", new File("./src/" + nomSobel + ".jpg"));
  				 System.out.println("Votre image convertie se trouve dans ./src/" + nomSobel + ".jpg");
            
