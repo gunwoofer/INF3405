@@ -227,43 +227,23 @@ public class SobelConverter extends Thread {
 	public static boolean verifierCredentials(String login, String mdp) throws FileNotFoundException, IOException, ParseException 
 
 	 {
-
-		
-
 		JSONParser parser = new JSONParser();
-
-	        
 
    	Object obj = parser.parse(new FileReader("./src/login.json"));
 
        JSONArray userList = (JSONArray)obj;
-
-       
-
-       for (Object o : userList)
-
-       {
-
+      
+       for (Object o : userList) {
        	JSONObject utilisateur = (JSONObject) o;
 
-       	if (login.equals (utilisateur.get("login")))
-
-       	{
+       	if (login.equals (utilisateur.get("login"))) {
 
        		if (mdp.equals(utilisateur.get("password"))) { return true; }
-
        		else {
-
        			return false;
-
        		}
-
        	}
-
        }
-
-       
-
    	FileWriter file = new FileWriter("./src/login.json");
 
    	JSONObject newJSON = new JSONObject();
@@ -277,9 +257,7 @@ public class SobelConverter extends Thread {
 	    file.write(userList.toJSONString());
 
         file.flush();
-
 	    return true;
-
 	 }
 
 	
