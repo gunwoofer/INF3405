@@ -83,7 +83,7 @@ public class client {
 		     socket = new Socket(serverAddress, port);	
 		     
 		     in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
- 			 out = new PrintWriter(socket.getOutputStream(), true);
+ 		     out = new PrintWriter(socket.getOutputStream(), true);
  			 
  			 String pseudomdp = login + ":" + password;
              out.println(pseudomdp);
