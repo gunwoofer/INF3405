@@ -8,13 +8,17 @@ import java.util.Scanner;
 import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.awt.image.BufferedImage;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -27,11 +31,13 @@ public class client {
 		String serverAddressString;
 		String login = null;
 		String password = null;
-		PrintWriter out = null;
-		BufferedReader in = null;
+		ObjectOutputStream out = null;
+		ObjectInputStream in = null;
 		int port;
         Scanner keyboard = new Scanner (System.in);
         
+        
+        // ADRESSE DU SERVEUR
         while(true){
 	        System.out.println("Veuillez entrer l'adresse du serveur");
 	        serverAddressString = keyboard.nextLine();
@@ -46,6 +52,7 @@ public class client {
 			}
 		}
 
+        // PORT DU SERVEUR
         while (true){
         	System.out.println("Veuillez entrer le port d'ecoute");
    
@@ -65,61 +72,81 @@ public class client {
         	}
         		
         }
+        
+        // CREDENTIALS
         keyboard.nextLine();
         System.out.println("Veuillez entrer votre nom d utilisateur :");
         login = keyboard.nextLine();
         System.out.println("Veuillez entrer votre mot de passe :");
         password = keyboard.nextLine();
 		
+        // CONNEXION ET IDENTIFICATION
 		try {
 		     socket = new Socket(serverAddress, port);	
-		     in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
- 		     out = new PrintWriter(socket.getOutputStream(), true);
+		     out = new ObjectOutputStream(socket.getOutputStream()); 		    
  			 String pseudomdp = login + ":" + password;
-             out.println(pseudomdp);
-             String messageRecu = in.readLine();
+             out.writeObject(pseudomdp);
+             String messageRecu = null;
+		     in = new ObjectInputStream(socket.getInputStream());
+
+			try {
+				messageRecu = in.readObject().toString();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
              if (messageRecu.equals("true")) {
             	 System.out.println("Vous etes connecte au service de traitement d image !");
             	 
             	 
-            	 //Envoi de l image
+            	 // ENVOI DE L IMAGE
             	 
             	 System.out.println("veuillez entrer le nom de l image a traiter (exemple : lassonde.jpg) : ");
             	 String nomFichier = keyboard.nextLine();
-
-            	 // Envoi nom de l image
-            	 
-            	 out.println(nomFichier);
-            	 BufferedImage image = ImageIO.read(new File("./src/" + nomFichier));
+            	 out.writeObject(nomFichier);
+            	 BufferedImage image = ImageIO.read(new File(nomFichier));
             	 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             	 ImageIO.write(image, "jpg", byteArrayOutputStream);
             	 byteArrayOutputStream.flush();
             	 int size = byteArrayOutputStream.size();
-            	 out.println(size); 	 
-            	 String recutaille = in.readLine();
-            	 byte tabImage[] = byteArrayOutputStream.toByteArray();
-            	 socket.getOutputStream().write(tabImage);
-            	 System.out.println("Image envoyee");
-            	 String recuimage = in.readLine();
-    
-            	 //Reception de l image
+            	 out.writeObject(size); 	 
             	 
-            	 String tailleImage = in.readLine();
-            	 out.println("taille bien recue");
+            	 try {
+					String recutaille = in.readObject().toString();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+            	 byte tabImage[] = byteArrayOutputStream.toByteArray();
+            	 out.writeObject(tabImage);
+            	 System.out.println("Image envoyee");
+            	 try {
+					String recuimage = in.readObject().toString();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+    
+            	 // RECEPTION DE L IMAGE
+            	 
+            	String tailleImage = null;
+				try {
+					tailleImage = in.readObject().toString();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+            	 out.writeObject("taille bien recue");
             	 int sobelSize = Integer.parseInt(tailleImage);
-            	 byte[] tabSobel = readExactly(socket.getInputStream(), sobelSize);
+            	 byte[] tabSobel = new byte[sobelSize];
+            	 in.readFully(tabSobel, 0, sobelSize);
  				 ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(tabSobel);
  				 BufferedImage imageSobel = ImageIO.read(byteArrayInputStream);
  				 System.out.println("Image bien recue");
  				 System.out.println("Entrez le nom sous lequel enregistrer l image Sobel sans l extension : ");
  				 String nomSobel = keyboard.nextLine();
- 				 ImageIO.write(imageSobel, "jpg", new File("./src/" + nomSobel + ".jpg"));
- 				 System.out.println("Votre image convertie se trouve dans ./src/" + nomSobel + ".jpg");
- 				 out.println("TERMINE");
+ 				 ImageIO.write(imageSobel, "jpg", new File(nomSobel + ".jpg"));
+ 				 System.out.println("Votre image convertie se trouve dans le meme fichier que votre client sous le nom " + nomSobel + ".jpg");
+ 				 out.writeObject("TERMINE");
              } else {
-            	 System.out.println("Mauvaise combinaison de login/password, veuillez reessayer");
+            	 System.out.println("Mauvaise combinaison de login/password !");
              }
-            
 	         socket.close();
 
 		}catch (UnknownHostException e) {
@@ -128,21 +155,4 @@ public class client {
 			e.printStackTrace();
 		}
 	}
-	
-	public static byte[] readExactly(InputStream input, int size) throws IOException
-	{
-	    byte[] data = new byte[size];
-	    int index = 0;
-	    while (index < size)
-	    {
-	        int bytesRead = input.read(data, index, size - index);
-	        if (bytesRead < 0)
-	        {
-	            throw new IOException("Insufficient data in stream");
-	        }
-	        index += size;
-	    }
-	    return data;
-	}
-
 }

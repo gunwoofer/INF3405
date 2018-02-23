@@ -9,7 +9,7 @@ import javax.imageio.ImageIO;
 
 
 import java.awt.image.BufferedImage;
-
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 
 import java.io.ByteArrayInputStream;
@@ -29,7 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import java.io.InputStreamReader;
-
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 
 import org.json.simple.JSONArray;
@@ -40,177 +41,132 @@ import org.json.simple.parser.JSONParser;
 
 import org.json.simple.parser.ParseException;
 
-
-
-
-
 public class SobelConverter extends Thread {
 
 	private Socket socket;
 	private String pseudoClient;
 
 	public SobelConverter(Socket socket) {
-
 		this.socket = socket;
-
 	}
 
 	public void run() {
 
 		try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+			ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+			ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+			
 			int size = 0;
 			BufferedImage image = null;
 
-			// Credentials
+			// VERIFICATION CREDENTIAL
 			
-				String messageRecu = in.readLine();
-				pseudoClient = messageRecu.split(":")[0];
-                String mdp = messageRecu.split(":")[1];
-                if(SobelConverter.verifierCredentials(pseudoClient, mdp)) {
-                	System.out.println("Connexion acceptee");
-                	out.println("true");
-                }
-                else {
+			String messageRecu = null;
+			try {
+				messageRecu = in.readObject().toString();
+			} catch (ClassNotFoundException e2) {
+				e2.printStackTrace();
+			}
+			pseudoClient = messageRecu.split(":")[0];
+            String mdp = messageRecu.split(":")[1];
+            if(SobelConverter.verifierCredentials(pseudoClient, mdp)) {
+            	System.out.println("Connexion acceptee");
+            	out.writeObject("true");
+            	out.flush();
+            }
+            else {
+            	System.out.println("Connexion refusee");
+            	out.writeObject("false");
+            	out.flush();
+           }
 
-                	System.out.println("Connexion refusee");
-                	out.println("false");
-               }
+				// RECEPTION NOM DE L IMAGE ET TAILLE DU BYTEARRAY
+                try {
+	                String nomImage = in.readObject().toString();
+					String taille;
+					
+					taille = in.readObject().toString();
+					size = Integer.parseInt(taille);
+					out.writeObject("taille recue");
+					out.flush();
+					
+					// RECEPTION DE L IMAGE
+	
+					byte[] tabImage = (byte[]) in.readObject();
+					InputStream byteArrayInputStream = new ByteArrayInputStream(tabImage);
+					image = ImageIO.read(byteArrayInputStream);
+					String ipportclient = socket.getRemoteSocketAddress().toString();
+					DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+					Date date = new Date();;
+					System.out.println("[" + this.pseudoClient + " - " + ipportclient + " - " + dateFormat.format(date) + "] Image " + nomImage + " bien recue");
+					out.writeObject("image recue");
+					out.flush();
+                } catch (ClassNotFoundException e1) {
+					e1.printStackTrace();
+				}
+                
+                // TRAITEMENT ET RENVOI DE L IMAGE
+                
+				try {
+					BufferedImage imageSobel = process(image);
+					ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+	           	 	ImageIO.write(imageSobel, "jpg", byteArrayOutputStream);
+	           	 	
+		           	int sobelSize = byteArrayOutputStream.size();
+		        	out.writeObject(sobelSize);
+		        	out.flush();
+		        	String confirmation = in.readObject().toString();
+		        	byte tabSobel[] = byteArrayOutputStream.toByteArray();
+		        	out.write(tabSobel, 0, sobelSize);
+		        	out.flush();
+		        	confirmation = in.readObject().toString();
+				} catch (IOException | ClassNotFoundException e) {
+		            System.out.println("Error handling client# " + e);
 
-			//Reception nom image et taille du bytearray
-
-                String nomImage = in.readLine();
-				String taille = in.readLine();
-				size = Integer.parseInt(taille);
-				out.println("taille recue");
-
-			//Reception de l image
-
-				byte[] tabImage = readExactly(socket.getInputStream(), size);
-				InputStream byteArrayInputStream = new ByteArrayInputStream(tabImage);
-				image = ImageIO.read(byteArrayInputStream);
-				String ipportclient = socket.getRemoteSocketAddress().toString();
-				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-				Date date = new Date();;
-				System.out.println("[" + this.pseudoClient + " - " + ipportclient + " - " + dateFormat.format(date) + "] Image " + nomImage + " bien recue");
-				out.println("image recue");
-
-			//Traitement de l image
-				
-				BufferedImage imageSobel = process(image);
-				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-           	 	ImageIO.write(imageSobel, "jpg", byteArrayOutputStream);
-	           	int sobelSize = byteArrayOutputStream.size();
-	        	out.println(sobelSize);
-	        	String confirmation = in.readLine();
-	        	byte tabSobel[] = byteArrayOutputStream.toByteArray();
-	        	socket.getOutputStream().write(tabSobel);
-	        	confirmation = in.readLine();
+		        }
 
 		} catch (IOException e) {
-
             System.out.println("Error handling client# " + e);
-
         } catch (ParseException e) {
-
 			e.printStackTrace();
-
 		} 
-
 		  catch (NumberFormatException e) {
-
 			e.printStackTrace();
-
 		}
-
 		finally {
-
             try {
-
                 socket.close();
-
             } catch (IOException e) {
-
                 System.out.println("Couldn't close a socket, what's going on?");
-
             }
-
             System.out.println("Connection with client closed");
-
         }
-
 	}
 
-	public static boolean verifierCredentials(String login, String mdp) throws FileNotFoundException, IOException, ParseException 
-
-	 {
+	public static boolean verifierCredentials(String login, String mdp) throws FileNotFoundException, IOException, ParseException {
 		JSONParser parser = new JSONParser();
-
-   	Object obj = parser.parse(new FileReader("./src/login.json"));
-
-       JSONArray userList = (JSONArray)obj;
+		Object obj = parser.parse(new FileReader("login.json"));
+		JSONArray userList = (JSONArray)obj;
       
-       for (Object o : userList) {
-       	JSONObject utilisateur = (JSONObject) o;
-
-       	if (login.equals (utilisateur.get("login"))) {
-
-       		if (mdp.equals(utilisateur.get("password"))) { return true; }
-       		else {
-       			return false;
-       		}
-       	}
+        for (Object o : userList) {
+	       	JSONObject utilisateur = (JSONObject) o;
+	       	if (login.equals (utilisateur.get("login"))) {
+	       		if (mdp.equals(utilisateur.get("password"))) { return true; }
+	       		else {
+	       			return false;
+	       		}
+	       	}
        }
-   	FileWriter file = new FileWriter("./src/login.json");
 
-   	JSONObject newJSON = new JSONObject();
-
-   	newJSON.put("login", login);
-
-	    newJSON.put("password", mdp);
-
-	    userList.add(newJSON);
-
-	    file.write(userList.toJSONString());
-
-        file.flush();
-	    return true;
+       FileWriter file = new FileWriter("login.json");
+   	   JSONObject newJSON = new JSONObject();
+   	   newJSON.put("login", login);
+	   newJSON.put("password", mdp);
+	   userList.add(newJSON);
+	   file.write(userList.toJSONString());
+       file.flush();
+	   return true;
 	 }
-
-	
-
-	public static byte[] readExactly(InputStream input, int size) throws IOException //Fonction Buggee
-
-	{
-
-	    byte[] data = new byte[size];
-
-	    int index = 0;
-
-	    while (index < size)
-
-	    {
-
-	        int bytesRead = input.read(data, index, size - index);
-
-	        if (bytesRead < 0)
-
-	        {
-
-	            throw new IOException("Insufficient data in stream");
-
-	        }
-
-	        index += size;
-
-	    }
-
-	    return data;
-
-	}
-
-	
 
 	public static BufferedImage process(BufferedImage image) throws IOException 
 

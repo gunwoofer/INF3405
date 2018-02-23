@@ -19,6 +19,8 @@ import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -29,13 +31,10 @@ public class server {
 	    
 		InetAddress serverAddress;
 		String serverAddressString;
-		String login = null;
-		String password = null;
-		PrintWriter out = null;
-		BufferedReader in = null;
 		int port;
         Scanner keyboard = new Scanner (System.in);
         
+        // ADRESSE DU SERVEUR
         while(true){
 	        System.out.println("Veuillez entrer l'adresse du serveur");
 	        serverAddressString = keyboard.nextLine();
@@ -50,6 +49,7 @@ public class server {
 			}
 		}
         
+        // PORT DU SERVEUR
         while (true){
         	System.out.println("Veuillez entrer le port d'ecoute");
    
@@ -75,12 +75,11 @@ public class server {
 		listener.bind(new InetSocketAddress(serverAddress, port));
 		System.out.format("Le serveur de conversion Sobel tourne sur: %s:%d%n", serverAddressString, port);
         
+		// ATTENTE DES CLIENTS ET CREATION DES THREAD DE TRAITEMENT D IMAGE
 		try {
 			 while (true) {
 	                new SobelConverter(listener.accept()).start();
 	            }
-                
-           
         } finally {
             listener.close();
         }
