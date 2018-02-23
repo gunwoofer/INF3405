@@ -1,6 +1,8 @@
 import java.net.Socket;
-
-
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Calendar;
 
 import javax.imageio.ImageIO;
 
@@ -44,11 +46,8 @@ import org.json.simple.parser.ParseException;
 
 public class SobelConverter extends Thread {
 
-
-
 	private Socket socket;
-
-	
+	private String pseudoClient;
 
 	public SobelConverter(Socket socket) {
 
@@ -56,137 +55,58 @@ public class SobelConverter extends Thread {
 
 	}
 
-	
-
 	public void run() {
 
 		try {
-
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
 			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-
 			int size = 0;
-
 			BufferedImage image = null;
 
-			
-
 			// Credentials
-
-			while (true) {
-
+			
 				String messageRecu = in.readLine();
-
-				if (messageRecu == null || messageRecu.equals(".")) {
-
-                    break;
-
-                }
-
-				String pseudo = messageRecu.split(":")[0];
-
+				pseudoClient = messageRecu.split(":")[0];
                 String mdp = messageRecu.split(":")[1];
-
-                System.out.println("Pseudo : " + pseudo);
-
-                System.out.println("Mot de passe : " + mdp);
-
-                if(SobelConverter.verifierCredentials(pseudo, mdp)) {
-
+                if(SobelConverter.verifierCredentials(pseudoClient, mdp)) {
                 	System.out.println("Connexion acceptee");
-
                 	out.println("true");
-
-                	break;
-
                 }
-
                 else {
 
                 	System.out.println("Connexion refusee");
-
                 	out.println("false");
+               }
 
-                	break;
+			//Reception nom image et taille du bytearray
 
-                }
-
-                
-
-			}
-
-			//Reception taille de l image en tableau
-
-			while (true) { 
-
-				String taille = in.readLine(); //Surement de la DEMER
-
-				if (taille == null || taille.equals(".")) {
-
-                    break;
-
-                }
-
+                String nomImage = in.readLine();
+				String taille = in.readLine();
 				size = Integer.parseInt(taille);
-
-				System.out.println("nombre de bits du fichier " + size);
 				out.println("taille recue");
-
-				break;
-
-			}
-
-			
 
 			//Reception de l image
 
-			while (true) { 
-
 				byte[] tabImage = readExactly(socket.getInputStream(), size);
-
 				InputStream byteArrayInputStream = new ByteArrayInputStream(tabImage);
-
 				image = ImageIO.read(byteArrayInputStream);
-
-				System.out.println("Image bien reçue");
+				String ipportclient = socket.getRemoteSocketAddress().toString();
+				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+				Date date = new Date();;
+				System.out.println("[" + this.pseudoClient + " - " + ipportclient + " - " + dateFormat.format(date) + "] Image " + nomImage + " bien recue");
 				out.println("image recue");
 
-				break;
-
-			}
-
-			
-
 			//Traitement de l image
-
-			while (true) { 
-
+				
 				BufferedImage imageSobel = process(image);
-
-				System.out.println("Image traitee");
-
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
            	 	ImageIO.write(imageSobel, "jpg", byteArrayOutputStream);
-
 	           	int sobelSize = byteArrayOutputStream.size();
-
 	        	out.println(sobelSize);
-	        	
 	        	String confirmation = in.readLine();
-
 	        	byte tabSobel[] = byteArrayOutputStream.toByteArray();
-
 	        	socket.getOutputStream().write(tabSobel);
-	        	
-	        	System.out.println(in.readLine());
-
-	        	break;
-
-			}
-
-			
+	        	confirmation = in.readLine();
 
 		} catch (IOException e) {
 
@@ -221,8 +141,6 @@ public class SobelConverter extends Thread {
         }
 
 	}
-
-
 
 	public static boolean verifierCredentials(String login, String mdp) throws FileNotFoundException, IOException, ParseException 
 
@@ -305,8 +223,6 @@ public class SobelConverter extends Thread {
 	  int x = image.getWidth();
 
 	  int y = image.getHeight();
-
-	  System.out.println("ok");
 
 	  int[][] edgeColors = new int[x][y];
 

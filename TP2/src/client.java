@@ -5,10 +5,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.InputMismatchException;
 import java.util.Scanner;
-
 import javax.imageio.ImageIO;
-
-
 import java.io.IOException;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -34,7 +31,6 @@ public class client {
 		BufferedReader in = null;
 		int port;
         Scanner keyboard = new Scanner (System.in);
-        //Scanner keyboard2 = new Scanner (System.in);
         
         while(true){
 	        System.out.println("Veuillez entrer l'adresse du serveur");
@@ -49,7 +45,7 @@ public class client {
 			       System.out.println("IP non valide, reessayez");
 			}
 		}
-        
+
         while (true){
         	System.out.println("Veuillez entrer le port d'ecoute");
    
@@ -60,81 +56,66 @@ public class client {
 	        		System.out.println("port valide");
 	        		break;
 	        	}
-	        	else System.out.println("port hors de l'intervalle 5000-5050, rï¿½essayez");
+	        	else System.out.println("port hors de l'intervalle 5000-5050, reessayez");
 	        }
         	catch (InputMismatchException e)
         	{
-        		System.out.println("format du port incorrect, rï¿½essayez");
+        		System.out.println("format du port incorrect, reessayez");
         		keyboard.next();
         	}
         		
         }
-        
         keyboard.nextLine();
         System.out.println("Veuillez entrer votre nom d utilisateur :");
         login = keyboard.nextLine();
-   
         System.out.println("Veuillez entrer votre mot de passe :");
         password = keyboard.nextLine();
 		
-		
 		try {
-		
 		     socket = new Socket(serverAddress, port);	
-		     
 		     in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
  		     out = new PrintWriter(socket.getOutputStream(), true);
- 			 
  			 String pseudomdp = login + ":" + password;
              out.println(pseudomdp);
-             
-             
              String messageRecu = in.readLine();
              if (messageRecu.equals("true")) {
             	 System.out.println("Vous etes connecte au service de traitement d image !");
             	 
             	 
             	 //Envoi de l image
+            	 
             	 System.out.println("veuillez entrer le nom de l image a traiter (exemple : lassonde.jpg) : ");
             	 String nomFichier = keyboard.nextLine();
+
+            	 // Envoi nom de l image
+            	 
+            	 out.println(nomFichier);
             	 BufferedImage image = ImageIO.read(new File("./src/" + nomFichier));
             	 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             	 ImageIO.write(image, "jpg", byteArrayOutputStream);
             	 byteArrayOutputStream.flush();
             	 int size = byteArrayOutputStream.size();
-            	 out.println(size);
-            	 
+            	 out.println(size); 	 
             	 String recutaille = in.readLine();
-            	 
             	 byte tabImage[] = byteArrayOutputStream.toByteArray();
             	 socket.getOutputStream().write(tabImage);
             	 System.out.println("Image envoyee");
-            	 
             	 String recuimage = in.readLine();
-            	 
+    
             	 //Reception de l image
+            	 
             	 String tailleImage = in.readLine();
-            	 
             	 out.println("taille bien recue");
-            	 
             	 int sobelSize = Integer.parseInt(tailleImage);
-            	 //int sobelSize = Integer.parseInt(in.readLine());
- 				 System.out.println("nombre de bits du fichier " + sobelSize);
             	 byte[] tabSobel = readExactly(socket.getInputStream(), sobelSize);
-            	 
-            	 out.println("IMAGEEEEEE BIEN RECUE");
-            	 
  				 ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(tabSobel);
  				 BufferedImage imageSobel = ImageIO.read(byteArrayInputStream);
- 				 System.out.println("Image bien reï¿½ue");
- 				 System.out.println("Entrez le nom sous lequel enregistrer l image Sobel");
- 				 
+ 				 System.out.println("Image bien recue");
+ 				 System.out.println("Entrez le nom sous lequel enregistrer l image Sobel sans l extension : ");
  				 String nomSobel = keyboard.nextLine();
- 				 System.out.println(nomSobel);
  				 ImageIO.write(imageSobel, "jpg", new File("./src/" + nomSobel + ".jpg"));
  				 System.out.println("Votre image convertie se trouve dans ./src/" + nomSobel + ".jpg");
-           
-            	 
+ 				 out.println("TERMINE");
              } else {
             	 System.out.println("Mauvaise combinaison de login/password, veuillez reessayer");
              }
